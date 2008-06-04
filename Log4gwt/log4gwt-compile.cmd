@@ -1,0 +1,1 @@
+@java -Xmx512m -cp "%~dp0\src;%~dp0\bin;%GWT_LIBS%/gwt-log/gwt-log-0.0.0.jar;%GWT_LIBS%/gwt-dnd/gwt-dnd-0.0.0.jar;%GWT_LIBS%/gwt-voices/gwt-voices-0.0.0.jar;%GWT_TRUNK%/user/src;%GWT_HOME%/gwt-user.jar;%GWT_HOME%/gwt-dev-windows.jar" com.google.gwt.dev.GWTCompiler -out "%~dp0\www" %* com.allen_sauer.gwt.log4gwt.log4gwt
