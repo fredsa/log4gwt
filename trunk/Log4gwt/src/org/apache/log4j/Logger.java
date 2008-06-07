@@ -1,12 +1,12 @@
 /*
  * Copyright 2008 Fred Sauer
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -15,32 +15,88 @@
  */
 package org.apache.log4j;
 
+import com.google.gwt.core.client.GWT;
+
 import com.allen_sauer.gwt.log.client.Log;
 
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 
-public class Logger {
+//CHECKSTYLE_JAVADOC_OFF
+public final class Logger {
+  private static final Enumeration<Appender> EMPTY_ENUMERATION = new Enumeration<Appender>() {
+    public boolean hasMoreElements() {
+      return false;
+    }
 
-  private static final Logger rootLogger = new Logger();
+    public Appender nextElement() {
+      throw new NoSuchElementException();
+    }
+  };
+  private static HashMap<String, Logger> loggerMap = new HashMap<String, Logger>();
+  private static final Logger rootLogger = new Logger("RootLogger");
+  private static boolean warnedUnimplemented;
 
-  private Logger() {
+  @Deprecated
+  public static Logger getInstance(Class<?> clazz) {
+    return getLogger(clazz);
   }
 
-  public boolean isTraceEnabled() {
-    return Log.isDebugEnabled();
+  @Deprecated
+  public static Logger getInstance(String name) {
+    return getLogger(name);
   }
 
-  public void trace(Object message, Throwable t) {
-    Log.debug(nullOrToString(message), t);
+  public static Logger getLogger(Class<?> clazz) {
+    return getLogger(clazz.getName());
   }
 
-  public void trace(Object message) {
-    Log.debug(nullOrToString(message));
+  public static Logger getLogger(String name) {
+    Logger logger = loggerMap.get(name);
+    if (logger == null) {
+      logger = new Logger(name);
+    }
+    return logger;
+  }
+
+  @Deprecated
+  public static Logger getRoot() {
+    return getRootLogger();
+  }
+
+  public static Logger getRootLogger() {
+    return rootLogger;
+  }
+
+  static void unimplemented() {
+    if (!warnedUnimplemented && !GWT.isScript()) {
+      Log.warn("Your application uses portions of the 'Apache Log4j' API which have not (yet) been implemented by 'log4gwt'");
+      warnedUnimplemented = true;
+    }
+  }
+
+  protected boolean additive = true;
+
+  protected volatile Level level;
+
+  protected String name;
+
+  protected Logger parent;
+
+  protected ResourceBundle resourceBundle;
+
+  private Logger(String name) {
+    assert !loggerMap.containsKey(name);
+    if (this != rootLogger) {
+      parent = rootLogger;
+    }
+    loggerMap.put(name, this);
   }
 
   public synchronized void addAppender(Appender newAppender) {
-    throw new UnsupportedOperationException();
+    unimplemented();
   }
 
   public void assertLog(boolean assertion, String msg) {
@@ -49,173 +105,193 @@ public class Logger {
     }
   }
 
-  public void callAppenders(LoggingEvent event) {
-    throw new UnsupportedOperationException();
+  public void debug(Object message) {
+    Log.debug(nullOrToString(message));
   }
 
   public void debug(Object message, Throwable t) {
     Log.debug(nullOrToString(message), t);
   }
 
-  private String nullOrToString(Object message) {
-    return message == null ? null : message.toString();
-  }
-
-  public void debug(Object message) {
-    Log.debug(nullOrToString(message));
+  public void error(Object message) {
+    Log.error(nullOrToString(message));
   }
 
   public void error(Object message, Throwable t) {
     Log.error(nullOrToString(message), t);
   }
 
-  public void error(Object message) {
-    Log.error(nullOrToString(message));
+  public void fatal(Object message) {
+    Log.fatal(nullOrToString(message));
   }
 
   public void fatal(Object message, Throwable t) {
     Log.fatal(nullOrToString(message), t);
   }
 
-  public void fatal(Object message) {
-    Log.fatal(nullOrToString(message));
-  }
-
-  protected void forcedLog(String fqcn, Priority level, Object message, Throwable t) {
-    throw new UnsupportedOperationException();
-  }
-
   public boolean getAdditivity() {
-    throw new UnsupportedOperationException();
+    return additive;
   }
 
-  public synchronized Enumeration getAllAppenders() {
-    throw new UnsupportedOperationException();
+  public synchronized Enumeration<Appender> getAllAppenders() {
+    unimplemented();
+    return EMPTY_ENUMERATION;
   }
 
   public synchronized Appender getAppender(String name) {
-    throw new UnsupportedOperationException();
+    unimplemented();
+    return null;
   }
 
-  public Priority getChainedPriority() {
-    throw new UnsupportedOperationException();
+  @Deprecated
+  public Level getChainedPriority() {
+    return getEffectiveLevel();
   }
 
   public Level getEffectiveLevel() {
-    throw new UnsupportedOperationException();
+    Logger logger = this;
+    do {
+      Level lvl = logger.getLevel();
+      if (lvl != null) {
+        return lvl;
+      }
+      logger = logger.getParent();
+    } while (logger != null);
+    assert false : "broken logger hierarchy";
+    return null;
   }
 
-  public LoggerRepository getHierarchy() {
-    throw new UnsupportedOperationException();
+  public Level getLevel() {
+    return level;
   }
 
-  public LoggerRepository getLoggerRepository() {
-    throw new UnsupportedOperationException();
+  public String getName() {
+    return name;
+  }
+
+  public Logger getParent() {
+    return parent;
+  }
+
+  @Deprecated
+  public Level getPriority() {
+    return getLevel();
   }
 
   public ResourceBundle getResourceBundle() {
-    throw new UnsupportedOperationException();
-  }
-
-  protected String getResourceBundleString(String key) {
-    throw new UnsupportedOperationException();
-  }
-
-  public void info(Object message, Throwable t) {
-    Log.info(nullOrToString(message), t);
+    unimplemented();
+    return null;
   }
 
   public void info(Object message) {
     Log.info(nullOrToString(message));
   }
 
+  public void info(Object message, Throwable t) {
+    Log.info(nullOrToString(message), t);
+  }
+
   public boolean isAttached(Appender appender) {
-    throw new UnsupportedOperationException();
+    unimplemented();
+    return false;
   }
 
   public boolean isDebugEnabled() {
     return Log.isDebugEnabled();
   }
 
-  public boolean isEnabledFor(Priority level) {
-    throw new UnsupportedOperationException();
+  public boolean isEnabledFor(Level level) {
+    unimplemented();
+    return true;
   }
 
   public boolean isInfoEnabled() {
     return Log.isInfoEnabled();
   }
 
-  public void l7dlog(Priority priority, String key, Object[] params, Throwable t) {
-    throw new UnsupportedOperationException();
+  public boolean isTraceEnabled() {
+    return Log.isTraceEnabled();
   }
 
-  public void l7dlog(Priority priority, String key, Throwable t) {
-    throw new UnsupportedOperationException();
+  public void l7dlog(Level level, String key, Object[] params, Throwable t) {
+    unimplemented();
   }
 
-  public void log(Priority priority, Object message, Throwable t) {
-    throw new UnsupportedOperationException();
+  public void l7dlog(Level level, String key, Throwable t) {
+    unimplemented();
   }
 
-  public void log(Priority priority, Object message) {
-    throw new UnsupportedOperationException();
+  public void log(Level level, Object message) {
+    unimplemented();
   }
 
-  public void log(String callerFQCN, Priority level, Object message, Throwable t) {
-    throw new UnsupportedOperationException();
+  public void log(Level level, Object message, Throwable t) {
+    unimplemented();
+  }
+
+  public void log(String callerFQCN, Level level, Object message, Throwable t) {
+    unimplemented();
   }
 
   public synchronized void removeAllAppenders() {
-    throw new UnsupportedOperationException();
+    unimplemented();
   }
 
   public synchronized void removeAppender(Appender appender) {
-    throw new UnsupportedOperationException();
+    unimplemented();
   }
 
   public synchronized void removeAppender(String name) {
-    throw new UnsupportedOperationException();
+    unimplemented();
   }
 
   public void setAdditivity(boolean additive) {
-    throw new UnsupportedOperationException();
+    unimplemented();
   }
 
   public void setLevel(Level level) {
-    throw new UnsupportedOperationException();
+    unimplemented();
   }
 
-  public void setPriority(Priority priority) {
-    throw new UnsupportedOperationException();
+  @Deprecated
+  public void setPriority(Level level) {
+    setLevel(level);
   }
 
   public void setResourceBundle(ResourceBundle bundle) {
-    throw new UnsupportedOperationException();
+    unimplemented();
   }
 
-  public void warn(Object message, Throwable t) {
-    Log.warn(nullOrToString(message), t);
+  public void trace(Object message) {
+    Log.trace(nullOrToString(message));
+  }
+
+  public void trace(Object message, Throwable t) {
+    Log.trace(nullOrToString(message), t);
   }
 
   public void warn(Object message) {
     Log.warn(nullOrToString(message));
   }
 
-  static public Logger getLogger(String name) {
-    // TODO return different loggers
-    return rootLogger;
+  public void warn(Object message, Throwable t) {
+    Log.warn(nullOrToString(message), t);
   }
 
-  static public Logger getLogger(Class clazz) {
-    // TODO return different loggers
-    return rootLogger;
+  protected void forcedLog(String fqcn, Level level, Object message, Throwable t) {
+    unimplemented();
   }
 
-  public static Logger getRootLogger() {
-    throw new UnsupportedOperationException();
+  protected String getResourceBundleString(String key) {
+    unimplemented();
+    return null;
   }
 
-  public static Logger getLogger(String name, LoggerFactory factory) {
-    throw new UnsupportedOperationException();
+  synchronized void closeNestedAppenders() {
   }
+
+  private String nullOrToString(Object message) {
+    return message == null ? null : message.toString();
+  }
+
 }
