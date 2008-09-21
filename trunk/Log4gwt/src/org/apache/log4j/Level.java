@@ -18,7 +18,6 @@ package org.apache.log4j;
 import com.allen_sauer.gwt.log.client.Log;
 
 //CHECKSTYLE_JAVADOC_OFF
-@SuppressWarnings("serial")
 public class Level {
 
   public static final Level ALL;
