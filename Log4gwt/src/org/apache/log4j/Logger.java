@@ -89,6 +89,7 @@ public final class Logger {
 
   private Logger(String name) {
     assert !loggerMap.containsKey(name);
+    this.name = name;
     if (this != rootLogger) {
       parent = rootLogger;
     }
@@ -99,34 +100,34 @@ public final class Logger {
     unimplemented();
   }
 
-  public void assertLog(boolean assertion, String msg) {
+  public void assertLog(boolean assertion, String message) {
     if (!assertion) {
-      Log.error(msg);
+      Log.error(formatMessage(message));
     }
   }
 
   public void debug(Object message) {
-    Log.debug(nullOrToString(message));
+    Log.debug(formatMessage(message));
   }
 
   public void debug(Object message, Throwable t) {
-    Log.debug(nullOrToString(message), t);
+    Log.debug(formatMessage(message), t);
   }
 
   public void error(Object message) {
-    Log.error(nullOrToString(message));
+    Log.error(formatMessage(message));
   }
 
   public void error(Object message, Throwable t) {
-    Log.error(nullOrToString(message), t);
+    Log.error(formatMessage(message), t);
   }
 
   public void fatal(Object message) {
-    Log.fatal(nullOrToString(message));
+    Log.fatal(formatMessage(message));
   }
 
   public void fatal(Object message, Throwable t) {
-    Log.fatal(nullOrToString(message), t);
+    Log.fatal(formatMessage(message), t);
   }
 
   public boolean getAdditivity() {
@@ -184,11 +185,11 @@ public final class Logger {
   }
 
   public void info(Object message) {
-    Log.info(nullOrToString(message));
+    Log.info(formatMessage(message));
   }
 
   public void info(Object message, Throwable t) {
-    Log.info(nullOrToString(message), t);
+    Log.info(formatMessage(message), t);
   }
 
   public boolean isAttached(Appender appender) {
@@ -263,19 +264,19 @@ public final class Logger {
   }
 
   public void trace(Object message) {
-    Log.trace(nullOrToString(message));
+    Log.trace(formatMessage(message));
   }
 
   public void trace(Object message, Throwable t) {
-    Log.trace(nullOrToString(message), t);
+    Log.trace(formatMessage(message), t);
   }
 
   public void warn(Object message) {
-    Log.warn(nullOrToString(message));
+    Log.warn(formatMessage(message));
   }
 
   public void warn(Object message, Throwable t) {
-    Log.warn(nullOrToString(message), t);
+    Log.warn(formatMessage(message), t);
   }
 
   protected void forcedLog(String fqcn, Level level, Object message, Throwable t) {
@@ -290,8 +291,7 @@ public final class Logger {
   synchronized void closeNestedAppenders() {
   }
 
-  private String nullOrToString(Object message) {
-    return message == null ? null : message.toString();
+  private String formatMessage(Object message) {
+    return "[" + name + "]" + (message == null ? null : message.toString());
   }
-
 }
